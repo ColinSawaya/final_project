@@ -1,2 +1,3 @@
-print("Hello World")
-print("hi")
+#imports
+import pygame
+
