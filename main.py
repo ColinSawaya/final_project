@@ -1,7 +1,9 @@
 #imports
 import pygame
+
 from Bird import Bird
 from Pipe import Pipe
+from pygame import mixer
 
 #SCREEN CONSTANTS
 WIDTH = 800
@@ -21,6 +23,7 @@ GAP_HEIGHT = 150
 PIPE_COLOR = (0, 255, 0)
 
 # COLOR CONSTANTS
+SCORE_COLOR = (0, 0, 255)
 BIRD_COLOR = (255, 255, 0)
 BACKGROUND_COLOR = (0, 0, 0)
 
@@ -31,6 +34,15 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 #Frames per second
 FPS = 30
+
+#sounds
+jump_sound = pygame.mixer.Sound("./sounds/swoosh.mp3")
+jump_sound.set_volume(0.3)
+score_sound = pygame.mixer.Sound("./sounds/plus_one.mp3")
+score_sound.set_volume(0.5)
+game_over_sound = pygame.mixer.Sound("./sounds/game_over_sound.mp3")
+game_over_sound.set_volume(0.3)
+
 
 #font
 font = pygame.font.SysFont('arial', 22)
@@ -60,6 +72,7 @@ def main(): #the game loops
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     bird.jump()
+                    jump_sound.play()
         if bird.y > HEIGHT:
             running = False
 
@@ -70,6 +83,14 @@ def main(): #the game loops
         if bird.y < 0:
             bird.y = 0
             bird.velocity = 0
+        if pipe.x + pipe.width == bird.x:
+            score += 1
+            score_sound.play()
+
+        score_text = f"Score: {score}"
+        text_surface = font.render(score_text, True, SCORE_COLOR)
+        screen.blit(text_surface, (WIDTH // 2, 20))
+
 
         if bird.x < pipe.x + pipe.width and bird.x + bird.size > pipe.x:
             if bird.y < pipe.gap_y or bird.y + bird.size > pipe.gap_y + pipe.gap_height:
@@ -79,6 +100,8 @@ def main(): #the game loops
         bird.draw()
         pygame.display.update()
 
+
 if __name__ == "__main__":
     main()
     pygame.quit()
+    
