@@ -26,14 +26,15 @@ PIPE_COLOR = (0, 255, 0)
 SCORE_COLOR = (0, 0, 255)
 BIRD_COLOR = (255, 255, 0)
 BACKGROUND_COLOR = (0, 0, 0)
+END_SCREEN_COLOR = (255, 0, 0)
+
+#Frames per second
+FPS = 30
 
 #set up screen
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-
-#Frames per second
-FPS = 30
 
 #sounds
 jump_sound = pygame.mixer.Sound("./sounds/swoosh.mp3")
@@ -53,6 +54,7 @@ clock = pygame.time.Clock()
 
 def main(): #the game loops
     running = True
+    game_over = False
     bird = Bird(screen, BIRD_X, BIRD_Y, BIRD_SIZE, BIRD_JUMP_STRENGTH, BIRD_COLOR)
     pipe = Pipe(screen, WIDTH, PIPE_WIDTH, GAP_HEIGHT, PIPE_SPEED, PIPE_COLOR, HEIGHT)
 
@@ -73,16 +75,29 @@ def main(): #the game loops
                 if event.key == pygame.K_SPACE:
                     bird.jump()
                     jump_sound.play()
+                if event.key == pygame.K_r and game_over:
+                    main()
+                if event.key == pygame.K_ESCAPE:
+                    running = False
         if bird.y > HEIGHT:
-            running = False
+            game_over = True
 
         if pipe.off_screen():
             pipe.reset()
-        bird.move()
-        pipe.move()
+
+        if not game_over:
+            bird.move()
+            pipe.move()
+        if game_over:
+            game_over_text = font.render("GAME OVER - Press R to Restart and Esc to Quit", True, END_SCREEN_COLOR)
+            high_score_text = font.render(f"Your score was {score}", True, END_SCREEN_COLOR)
+            screen.blit(game_over_text, (180, HEIGHT // 2))
+            screen.blit(high_score_text, (180, HEIGHT // 2 - 50))
+
         if bird.y < 0:
             bird.y = 0
             bird.velocity = 0
+
         if pipe.x + pipe.width == bird.x:
             score += 1
             score_sound.play()
@@ -94,7 +109,7 @@ def main(): #the game loops
 
         if bird.x < pipe.x + pipe.width and bird.x + bird.size > pipe.x:
             if bird.y < pipe.gap_y or bird.y + bird.size > pipe.gap_y + pipe.gap_height:
-                running = False
+                game_over = True
 
         pipe.draw()
         bird.draw()
